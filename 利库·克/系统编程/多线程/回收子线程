@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct 
+{
+    char ch;
+    int var;
+    char str[64];
+}exit_t;
+
+void *tfn(void *arg)
+{
+
+    exit_t* retvar=(exit_t*)arg;
+    printf("tid=%lu,pid=%d\n", pthread_self(), getpid());
+    // int ret=1;
+    // pthread_exit((void*)ret);
+    pthread_exit((void*)retvar);
+    
+}
+int main(int argc, char const *argv[])
+{
+    //int *retval;
+
+    //提前准备好结构体指针,方便free,通过creat传指针
+    exit_t *retvar=(exit_t *)malloc(sizeof(exit_t));
+    retvar->ch='m';
+    retvar->var=200;
+    strcpy(retvar->str,"hello");
+
+    pthread_t tid;
+    int ret = pthread_create(&tid, NULL, tfn, retvar);
+    if (ret != 0)
+    {
+        perror("创建失败");
+    }
+    printf("tid=%lu,pid=%d\n", pthread_self(), getpid());
+
+    //pthread_join(tid,(void**)&retval);简易
+    //printf("---%d\n",(int)retval);
+    pthread_join(tid,(void**)&retvar);
+    printf("%c,%d,%s\n",retvar->ch,retvar->var,retvar->str);
+    free(retvar);
+    return 0;
+}
