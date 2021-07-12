@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+void *tfn(void *arg)
+{
+    int i = (int)arg;
+    sleep(i);
+    // int i =*((int*)arg);//线程同时创建读地址指向的i不是实时的
+    printf("%dth tid=%lu,pid=%d\n",i, pthread_self(), getpid());
+    //exit(1);第一个线程完毕结束进程
+    return NULL;
+}
+int main(int argc, char const *argv[])
+{
+    pthread_t tid;
+
+    for (int i = 0; i < 5; i++)
+    {
+        int ret = pthread_create(&tid, NULL, tfn, (void *)i);
+        //int ret = pthread_create(&tid, NULL, tfn, (int*)&i);
+        if (ret != 0)
+        {
+            perror("创建失败");
+            return -1;
+        }
+    }
+    sleep(6);
+    pthread_exit(NULL);//主线程退出,等待子线程结束
+    printf("tid=%lu,pid=%d\n", pthread_self(), getpid());
+
+
+    return 0;
+}
